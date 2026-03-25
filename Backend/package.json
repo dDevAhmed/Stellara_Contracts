@@ -21,6 +21,15 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:create": "prisma migrate dev --create-only",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
+    "db:migrate:reset": "prisma migrate reset",
+    "db:migrate:diff": "prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url $SHADOW_DATABASE_URL",
+    "db:rollback": "ts-node prisma/scripts/rollback.ts",
+    "db:rollback:list": "ts-node prisma/scripts/rollback.ts --list",
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:pre-deploy": "ts-node prisma/scripts/pre-deploy-check.ts",
     "db:studio": "prisma studio",
     "prepare": "cd .. && husky install backend/.husky"
   },
@@ -107,5 +116,8 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

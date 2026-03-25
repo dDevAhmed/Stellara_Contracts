@@ -1,8 +1,15 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma v7: datasource connection URL is configured in prisma.config.ts
 
 generator client {
   provider = "prisma-client-js"
+}
+
+// Provider is declared here for @db attribute support.
+// Connection URL is in prisma.config.ts (Prisma v7+)
+datasource db {
+  provider = "postgresql"
 }
 
 model User {
@@ -20,7 +27,6 @@ model User {
   pushSubscription Json?   @map("push_subscription")
 
   // Encrypted PII fields
-  emailEncrypted   Json? @map("email_encrypted")
   phoneEncrypted   Json? @map("phone_encrypted")
   ssnEncrypted     Json? @map("ssn_encrypted")
   addressEncrypted Json? @map("address_encrypted")
