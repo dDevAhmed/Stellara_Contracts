@@ -1,12 +1,22 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::{Address as _, Ledger}, Address, Env, Vec};
 use soroban_sdk::token::{Client as TokenClient, StellarAssetClient};
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    Address, Env, Vec,
+};
 
-fn create_token(env: &Env, admin: &Address) -> (Address, TokenClient<'static>, StellarAssetClient<'static>) {
+fn create_token(
+    env: &Env,
+    admin: &Address,
+) -> (Address, TokenClient<'static>, StellarAssetClient<'static>) {
     let address = env.register_stellar_asset_contract(admin.clone());
-    (address.clone(), TokenClient::new(env, &address), StellarAssetClient::new(env, &address))
+    (
+        address.clone(),
+        TokenClient::new(env, &address),
+        StellarAssetClient::new(env, &address),
+    )
 }
 
 #[test]
@@ -16,7 +26,7 @@ fn test_staking_workflow() {
 
     let admin = Address::generate(&env);
     let user = Address::generate(&env);
-    
+
     // Create tokens
     let (staking_token_address, staking_token, staking_token_admin) = create_token(&env, &admin);
     let (reward_token_address, reward_token, reward_token_admin) = create_token(&env, &admin);
@@ -34,7 +44,7 @@ fn test_staking_workflow() {
 
     // User stakes 1000 in pool 0 (30 days, 5% APY)
     client.stake(&user, &1000, &0);
-    
+
     assert_eq!(staking_token.balance(&user), 9000);
     assert_eq!(staking_token.balance(&contract_id), 1000);
 
@@ -86,7 +96,7 @@ fn test_early_withdrawal_penalty() {
 
     let admin = Address::generate(&env);
     let user = Address::generate(&env);
-    
+
     let (staking_token_address, _staking_token, staking_token_admin) = create_token(&env, &admin);
     let (reward_token_address, _reward_token, _reward_token_admin) = create_token(&env, &admin);
 
@@ -122,7 +132,7 @@ fn test_compounding() {
 
     let admin = Address::generate(&env);
     let user = Address::generate(&env);
-    
+
     // In compounding test, staking token and reward token MUST be the same
     let (token_address, token, token_admin) = create_token(&env, &admin);
 
@@ -152,7 +162,7 @@ fn test_compounding() {
 
     // Compound
     client.compound(&user);
-    
+
     let stake_info = client.get_stake(&user).unwrap();
     assert_eq!(stake_info.amount, 1073);
     assert_eq!(token.balance(&user), 0);

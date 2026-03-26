@@ -61,8 +61,12 @@ impl StakingRewardsContract {
         }
 
         env.storage().instance().set(&storage_keys::ADMIN, &admin);
-        env.storage().instance().set(&storage_keys::STAKE_TOKEN, &staking_token);
-        env.storage().instance().set(&storage_keys::REWARD_TOKEN, &reward_token);
+        env.storage()
+            .instance()
+            .set(&storage_keys::STAKE_TOKEN, &staking_token);
+        env.storage()
+            .instance()
+            .set(&storage_keys::REWARD_TOKEN, &reward_token);
 
         // Define default pools: 30, 60, 90 days
         let pools = soroban_sdk::vec![
@@ -80,7 +84,9 @@ impl StakingRewardsContract {
                 apy_bps: 1500, // 15%
             },
         ];
-        env.storage().instance().set(&storage_keys::POOL_CONFIG, &pools);
+        env.storage()
+            .instance()
+            .set(&storage_keys::POOL_CONFIG, &pools);
 
         Ok(())
     }
@@ -206,7 +212,7 @@ impl StakingRewardsContract {
             let penalty_bps = 1000; // 10% penalty
             let penalty_amount = (principal_to_return * penalty_bps as i128) / 10000;
             principal_to_return -= penalty_amount;
-            
+
             // Penalty stays in the contract (could be sent to a treasury)
         }
 
@@ -247,9 +253,17 @@ impl StakingRewardsContract {
         }
 
         // Logic check: reward token must be the same as staking token for auto-compound
-        let staking_token: Address = env.storage().instance().get(&storage_keys::STAKE_TOKEN).unwrap();
-        let reward_token: Address = env.storage().instance().get(&storage_keys::REWARD_TOKEN).unwrap();
-        
+        let staking_token: Address = env
+            .storage()
+            .instance()
+            .get(&storage_keys::STAKE_TOKEN)
+            .unwrap();
+        let reward_token: Address = env
+            .storage()
+            .instance()
+            .get(&storage_keys::REWARD_TOKEN)
+            .unwrap();
+
         if staking_token != reward_token {
             return Err(ContractError::Unauthorized); // Or a more specific error
         }
@@ -276,7 +290,7 @@ impl StakingRewardsContract {
     pub fn get_pending_rewards(env: Env, user: Address) -> i128 {
         let key = (storage_keys::USER_STAKE, user);
         if let Some(user_stake) = env.storage().persistent().get::<_, UserStake>(&key) {
-           return calculate_rewards(&env, &user_stake).unwrap_or(0);
+            return calculate_rewards(&env, &user_stake).unwrap_or(0);
         }
         0
     }
@@ -304,11 +318,11 @@ fn calculate_rewards(env: &Env, user_stake: &UserStake) -> Result<i128, Contract
     // Reward = Principal * APY * (elapsed / seconds_in_year)
     // APY is in basis points
     let seconds_in_year: u64 = 365 * 24 * 60 * 60;
-    
+
     // Scale precision for calculation: (amount * apy * seconds) / (10000 * seconds_in_year)
     // Using i128 to prevent overflow in Intermediate calculation
-    let reward = (user_stake.amount * pool.apy_bps as i128 * elapsed_seconds as i128) 
-                 / (10000i128 * seconds_in_year as i128);
+    let reward = (user_stake.amount * pool.apy_bps as i128 * elapsed_seconds as i128)
+        / (10000i128 * seconds_in_year as i128);
 
     Ok(reward)
 }
