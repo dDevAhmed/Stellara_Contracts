@@ -1631,3 +1631,106 @@ model LiquidityMiningEvent {
   @@index([createdAt])
   @@map("liquidity_mining_events")
 }
+
+// ─── Predictive Maintenance Models ───────────────────────────────────────────
+
+model SystemMetric {
+  id                String   @id @default(cuid())
+  metricType        String   @map("metric_type") // "cpu", "memory", "disk", "connections", "network", "latency"
+  metricName        String   @map("metric_name") // specific metric name
+  value             Float
+  unit              String   @default("") // "percent", "bytes", "count", "ms", etc.
+  tags              Json?    // additional metadata (host, region, service, etc.)
+  collectedAt       DateTime @default(now()) @map("collected_at")
+
+  predictions       MetricPrediction[]
+
+  @@index([metricType])
+  @@index([metricName])
+  @@index([collectedAt])
+  @@index([metricType, collectedAt])
+  @@map("system_metrics")
+}
+
+model MetricPrediction {
+  id                String   @id @default(cuid())
+  systemMetricId    String   @map("system_metric_id")
+  predictionType    String   @map("prediction_type") // "anomaly", "capacity", "failure"
+  predictedValue    Float?   @map("predicted_value")
+  confidenceScore   Float    @map("confidence_score") // 0-1
+  predictionWindow  Int      @map("prediction_window") // hours until predicted event
+  thresholdValue    Float?   @map("threshold_value") // the threshold that will be breached
+  riskLevel         String   @map("risk_level") // "low", "medium", "high", "critical"
+  explanation       String?  // ML model explanation
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  systemMetric      SystemMetric @relation(fields: [systemMetricId], references: [id], onDelete: Cascade)
+  maintenanceTicket MaintenanceTicket?
+
+  @@index([systemMetricId])
+  @@index([predictionType])
+  @@index([riskLevel])
+  @@index([createdAt])
+  @@map("metric_predictions")
+}
+
+model MaintenanceTicket {
+  id                String   @id @default(cuid())
+  predictionId      String   @unique @map("prediction_id")
+  title             String
+  description       String
+  priority          String   // "low", "medium", "high", "critical"
+  status            String   @default("open") // "open", "in_progress", "resolved", "closed"
+  assignedTo        String?  @map("assigned_to")
+  estimatedEffort   Int?     @map("estimated_effort") // hours
+  actualEffort      Int?     @map("actual_effort") // hours
+  resolutionNotes   String?  @map("resolution_notes")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  resolvedAt        DateTime? @map("resolved_at")
+
+  prediction        MetricPrediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  notifications     MaintenanceNotification[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("maintenance_tickets")
+}
+
+model MaintenanceNotification {
+  id                String   @id @default(cuid())
+  ticketId          String   @map("ticket_id")
+  notificationType  String   @map("notification_type") // "slack", "pagerduty", "email"
+  recipient         String   // channel, email, or service
+  message           String
+  status            String   @default("pending") // "pending", "sent", "failed"
+  sentAt            DateTime? @map("sent_at")
+  errorMessage      String?  @map("error_message")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  ticket            MaintenanceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([notificationType])
+  @@index([status])
+  @@map("maintenance_notifications")
+}
+
+model MLModel {
+  id                String   @id @default(cuid())
+  modelName         String   @unique @map("model_name")
+  modelType         String   @map("model_type") // "anomaly_detection", "forecasting", "classification"
+  version           String
+  accuracy          Float?   // model accuracy score
+  parameters        Json?    // model hyperparameters
+  trainingDataStart DateTime? @map("training_data_start")
+  trainingDataEnd   DateTime? @map("training_data_end")
+  lastTrainedAt     DateTime? @map("last_trained_at")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([modelType])
+  @@index([isActive])
+  @@map("ml_models")
+}
