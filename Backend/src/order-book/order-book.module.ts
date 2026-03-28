@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { RedisModule } from '../../redis/redis.module';
+import { RedisModule } from '../redis/redis.module';
 import { OrderBookManagerService } from './services/order-book-manager.service';
 import { SpreadCalculatorService } from './services/spread-calculator.service';
 import { OrderBookPerformanceMonitor } from './services/performance-monitor.service';
 import { OrderBookGateway } from './gateways/order-book.gateway';
-import { ConnectionStateService } from '../../websocket/connection-state.service';
+import { ConnectionStateService } from '../websocket/connection-state.service';
 
 /**
  * Order Book Module

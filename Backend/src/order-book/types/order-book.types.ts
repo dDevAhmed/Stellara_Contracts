@@ -83,10 +83,36 @@ export class Order {
 
   status?: OrderStatus;
 
-  constructor(partial: Partial<Order>) {
-    Object.assign(this, partial);
+  constructor(partial: Partial<Omit<Order, 'price' | 'quantity' | 'remainingQuantity'> & {
+    price?: bigint | string;
+    quantity?: bigint | string;
+    remainingQuantity?: bigint | string;
+  }>) {
+    // Handle price/quantity conversion from string to bigint if needed
+    const { price, quantity, remainingQuantity, ...rest } = partial;
+    
+    Object.assign(this, rest);
     this.timestamp = Date.now();
-    this.remainingQuantity = this.remainingQuantity || this.quantity;
+    
+    // Convert price to bigint
+    if (price !== undefined) {
+      this.price = typeof price === 'string' ? this.parsePrice(price) : price;
+    }
+    
+    // Convert quantity to bigint
+    if (quantity !== undefined) {
+      this.quantity = typeof quantity === 'string' ? this.parseQuantity(quantity) : quantity;
+    }
+    
+    // Set remaining quantity
+    if (remainingQuantity !== undefined) {
+      this.remainingQuantity = typeof remainingQuantity === 'string' 
+        ? this.parseQuantity(remainingQuantity) 
+        : remainingQuantity || this.quantity;
+    } else {
+      this.remainingQuantity = this.quantity;
+    }
+    
     this.priority = this.priority || 0;
   }
 
@@ -108,6 +134,24 @@ export class Order {
     const paddedFractional = fractional.padEnd(8, '0').slice(0, 8);
     this.quantity = BigInt(`${whole}${paddedFractional}`);
     this.remainingQuantity = this.quantity;
+  }
+
+  /**
+   * Parse price string to bigint (helper for constructor)
+   */
+  private parsePrice(priceStr: string): bigint {
+    const [whole, fractional = ''] = priceStr.split('.');
+    const paddedFractional = fractional.padEnd(8, '0').slice(0, 8);
+    return BigInt(`${whole}${paddedFractional}`);
+  }
+
+  /**
+   * Parse quantity string to bigint (helper for constructor)
+   */
+  private parseQuantity(qtyStr: string): bigint {
+    const [whole, fractional = ''] = qtyStr.split('.');
+    const paddedFractional = fractional.padEnd(8, '0').slice(0, 8);
+    return BigInt(`${whole}${paddedFractional}`);
   }
 
   /**

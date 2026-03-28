@@ -62,8 +62,8 @@ class OrderBookBenchmark {
 
       const order = this.createTestOrder({
         orderId: `add-bench-${i}`,
-        price: `${50000 + (i % 100)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(i % 100),
+        quantity: 10000000n, // 0.1 * 10^8
       });
 
       this.orderBook.addOrder(order);
@@ -90,8 +90,8 @@ class OrderBookBenchmark {
     for (let i = 0; i < iterations; i++) {
       const order = this.createTestOrder({
         orderId: `cancel-bench-${i}`,
-        price: `${50000 + (i % 100)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(i % 100),
+        quantity: 10000000n, // 0.1 * 10^8
       });
       this.orderBook.addOrder(order);
       orderIds.push(order.orderId);
@@ -125,8 +125,8 @@ class OrderBookBenchmark {
       const sellOrder = this.createTestOrder({
         orderId: `liq-${i}`,
         side: OrderSide.SELL,
-        price: `${50000 + (i % 10)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(i % 10),
+        quantity: 10000000n, // 0.1 * 10^8
       });
       this.orderBook.addOrder(sellOrder);
 
@@ -136,8 +136,8 @@ class OrderBookBenchmark {
       const buyOrder = this.createTestOrder({
         orderId: `match-bench-${i}`,
         side: OrderSide.BUY,
-        price: `${50000 + (i % 10)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(i % 10),
+        quantity: 10000000n, // 0.1 * 10^8
       });
       this.orderBook.matchOrder(buyOrder);
 
@@ -161,8 +161,8 @@ class OrderBookBenchmark {
     for (let i = 0; i < ordersCount; i++) {
       const order = this.createTestOrder({
         orderId: `throughput-${i}`,
-        price: `${50000 + (i % 1000)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(i % 1000),
+        quantity: 10000000n, // 0.1 * 10^8
       });
       this.orderBook.addOrder(order);
     }
@@ -192,8 +192,8 @@ class OrderBookBenchmark {
     for (let i = 0; i < 1000; i++) {
       const order = this.createTestOrder({
         orderId: `memory-${i}`,
-        price: `${50000 + Math.floor(i / 10)}.00`,
-        quantity: '0.1',
+        price: 50000n + BigInt(Math.floor(i / 10)),
+        quantity: 10000000n, // 0.1 * 10^8
       });
       this.orderBook.addOrder(order);
     }

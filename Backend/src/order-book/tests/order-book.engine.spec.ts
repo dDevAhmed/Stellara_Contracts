@@ -33,15 +33,15 @@ describe('OrderBookEngine', () => {
     it('should add a buy order successfully', () => {
       const order = createTestOrder({
         side: OrderSide.BUY,
-        price: '50000.00',
-        quantity: '0.1',
+        price: 50000n,
+        quantity: 10000000n, // 0.1 * 10^8
       });
 
       const result = orderBook.addOrder(order);
       
       expect(result).toBeDefined();
       expect(result.side).toBe(OrderSide.BUY);
-      expect(result.price).toBe('50000.00');
+      expect(result.price).toBe(50000n);
       expect(result.status).toBe('PENDING');
     });
 
@@ -401,7 +401,11 @@ describe('OrderBookEngine', () => {
 
 // Helper functions
 
-function createTestOrder(overrides: Partial<Order> = {}): Order {
+function createTestOrder(overrides: Partial<Omit<Order, 'price' | 'quantity' | 'remainingQuantity'> & {
+  price?: bigint | string;
+  quantity?: bigint | string;
+  remainingQuantity?: bigint | string;
+}> = {}): Order {
   const order = new Order({
     orderId: overrides.orderId || `test-order-${Date.now()}-${Math.random()}`,
     symbol: 'BTC-USDT',
@@ -412,14 +416,25 @@ function createTestOrder(overrides: Partial<Order> = {}): Order {
     ...overrides,
   });
 
-  if (overrides.price) {
-    order.setPriceFromString(overrides.price);
+  if (overrides.price !== undefined) {
+    // If price is a string, convert it; otherwise use the bigint value directly
+    if (typeof overrides.price === 'string') {
+      order.setPriceFromString(overrides.price);
+    } else {
+      order.price = overrides.price;
+    }
   } else {
     order.setPriceFromString('50000.00');
   }
 
-  if (overrides.quantity) {
-    order.setQuantityFromString(overrides.quantity);
+  if (overrides.quantity !== undefined) {
+    // If quantity is a string, convert it; otherwise use the bigint value directly
+    if (typeof overrides.quantity === 'string') {
+      order.setQuantityFromString(overrides.quantity);
+    } else {
+      order.quantity = overrides.quantity;
+      order.remainingQuantity = overrides.quantity;
+    }
   } else {
     order.setQuantityFromString('0.1');
   }
