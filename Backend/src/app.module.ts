@@ -63,6 +63,7 @@ import { LiquidityAggregationModule } from './liquidity-aggregation/liquidity-ag
 import { LiquidityProvisioningModule } from './liquidity-provisioning/liquidity-provisioning.module';
 import { CustomerIdentityGraphModule } from './customer-identity-graph/customer-identity-graph.module';
 import { CrossChainSwapModule } from './cross-chain-swap/cross-chain-swap.module';
+import { CrossChainRouterModule } from './cross-chain-router/cross-chain-router.module';
 import { PredictiveSettlementModule } from './predictive-settlement/predictive-settlement.module';
 import { HFTModule } from './hft/hft.module';
 import { QuantumCryptoModule } from './crypto/quantum/quantum-crypto.module';
@@ -161,6 +162,7 @@ import { SyntheticAssetsModule } from './synthetic-assets/synthetic-assets.modul
     HFTModule,
     QuantumCryptoModule,
     AIAuditorModule,
+    CrossChainRouterModule,
     VoiceTradingModule,
     SyntheticAssetsModule,
 
